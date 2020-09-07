@@ -153,6 +153,7 @@ app.post("/submit", function(req, res){
         }else{
           passport.authenticate("local")(req, res, function(){
             res.redirect("/secrets")
+            console.log(user);
           })
         }
       })
