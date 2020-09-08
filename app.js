@@ -1,3 +1,4 @@
+
 //jshint esversion:6
 require('dotenv').config();
 const express = require("express");
@@ -29,7 +30,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-mongoose.connect("mongodb+srv://admin-mohammed:Test123@cluster0.pmygq.mongodb.net/userDB", {
+mongoose.connect("mongodb://localhost:27017/userDB", {
       useUnifiedTopology: true,
       useNewUrlParser: true
     });
@@ -61,7 +62,7 @@ passport.deserializeUser(function(id, done) {
 });
 
 passport.use(new GoogleStrategy({
-  clientID: process.env.CLINET_ID,
+  clientID: process.env.CLIENT_ID,
   clientSecret: process.env.CLINET_SECRET,
   callbackURL: "https://shielded-wildwood-31590.herokuapp.com/auth/google/secrets",
   userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
@@ -97,47 +98,47 @@ User.findOrCreate({ googleId: profile.id }, function (err, user) {
       res.render("register");
     })
 
-    app.get("/secrets", function(req, res){
-      User.find({"secret": {$ne: null}}, function(err, foundUser){
-        if(err){
-          console.log(err);
-        }else{
-          if(foundUser){
-            res.render("secrets", {userswithsecret: foundUser})
+        app.get("/secrets", function(req, res){
+          User.find({"secret": {$ne: null}}, function(err, foundUser){
+            if(err){
+              console.log(err);
+            }else{
+              if(foundUser){
+                res.render("secrets", {userswithsecret: foundUser})
+                }
+              else{
+                res.redirect("/")
+              }
             }
-          else{
-            res.redirect("/")
-          }
-        }
-      });
-    })
-
-    app.get("/submit", function(req, res){
-      if(req.isAuthenticated()){
-        res.render("submit");
-      }else{
-        res.render("login");
-      }
-    })
-
-app.post("/submit", function(req, res){
-  const SubmitedSercret = req.body.secret;
-
-  User.findById(req.user._id, function(err, foundUser){
-    if(err){
-      console.log(err);
-    }else{
-      if(foundUser){
-        foundUser.secret = SubmitedSercret;
-        foundUser.save(function(){
-          res.redirect("/secrets")
+          });
         })
-      }else{
-        res.redirect("/")
-      }
-    }
-  })
-})
+
+        app.get("/submit", function(req, res){
+              if(req.isAuthenticated()){
+                res.render("submit");
+              }else{
+                res.render("login");
+              }
+            })
+
+        app.post("/submit", function(req, res){
+          const SubmitedSercret = req.body.secret;
+
+          User.findById(req.user._id, function(err, foundUser){
+            if(err){
+              console.log(err);
+            }else{
+              if(foundUser){
+                foundUser.secret = SubmitedSercret;
+                foundUser.save(function(){
+                  res.redirect("/secrets")
+                })
+              }else{
+                res.redirect("/")
+              }
+            }
+          })
+        })
 
     app.get("/logout", function(req, res){
       req.logout();
@@ -153,7 +154,6 @@ app.post("/submit", function(req, res){
         }else{
           passport.authenticate("local")(req, res, function(){
             res.redirect("/secrets")
-            console.log(user);
           })
         }
       })
@@ -176,6 +176,7 @@ app.post("/submit", function(req, res){
       })
 
     })
+
 
 
     let port = process.env.PORT;
