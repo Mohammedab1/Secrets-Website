@@ -14,3 +14,26 @@ body {
   color: #fff;
   background-color: #000;
 }
+.secret-text:hover {
+  background-color: red;
+}
+
+
+input[type="checkbox"] {
+  margin: 20px;
+}
+
+.item {
+
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #F1F1F1;
+}
+
+.box {
+  max-width: 400px;
+  margin: 50px auto;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
+}

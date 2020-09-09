@@ -20,6 +20,37 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+const itemsSchema = {
+  name: String
+};
+const Item = mongoose.model("Item", itemsSchema);
+
+const item1 = new Item({
+  name: "اللحمة"
+});
+const item2 = new Item({
+  name: "الفطور"
+});
+const item3 = new Item({
+  name: "الحلى"
+});
+const item4 = new Item({
+  name: "المسليات"
+});
+const item5 = new Item({
+  name: "مويه ومشروبات"
+});
+
+item1.save()
+item2.save()
+item3.save()
+item4.save()
+item5.save()
+
+
+
+Tasks = ["eat" , "drink" , "sleep"]
+
 app.use(session({
       secret: "our secret",
       resave: false,
@@ -37,6 +68,7 @@ mongoose.connect("mongodb+srv://admin-mohammed:Test123@cluster0.pmygq.mongodb.ne
 mongoose.set('useCreateIndex', true);
 
     const userSchema = new mongoose.Schema({
+      Name: String,
       email: String,
       password: String,
       googleId: String,
@@ -69,7 +101,7 @@ passport.use(new GoogleStrategy({
 },
 function(accessToken, refreshToken, profile, cb) {
 console.log(profile);
-User.findOrCreate({ googleId: profile.id }, function (err, user) {
+User.findOrCreate({ googleId: profile.id , Name: profile.name}, function (err, user) {
   return cb(err, user);
 });
 }
@@ -99,6 +131,7 @@ User.findOrCreate({ googleId: profile.id }, function (err, user) {
     })
 
         app.get("/secrets", function(req, res){
+
           User.find({"secret": {$ne: null}}, function(err, foundUser){
             if(err){
               console.log(err);
@@ -153,16 +186,23 @@ User.findOrCreate({ googleId: profile.id }, function (err, user) {
           res.redirect("register")
         }else{
           passport.authenticate("local")(req, res, function(){
+            User.updateOne({username: req.body.username}, {Name: req.body.name}, function(err){
+              if(err){
+                console.log("12345678");
+              }else{
+                console.log("Sucesffuly Updated the document");
+                  }
+              } );
             res.redirect("/secrets")
           })
         }
       })
     })
-
     app.post("/login", function(req, res) {
       const user = new User({
         username: req.body.username,
         password: req.body.password
+
       });
 
       req.login(user, function(err){
@@ -176,7 +216,47 @@ User.findOrCreate({ googleId: profile.id }, function (err, user) {
       })
 
     })
+app.get("/task", function(req, res){
+  if(req.isAuthenticated()){
+    Item.find({}, function(err, result){
+        res.render("task", {Task: result});
+    })
+  }else{
+    res.render("register")
+  }
 
+  // User.find({"secret": {$ne: null}}, function(err, foundUser){
+  //   if(err){
+  //     console.log(err);
+  //   }else{
+  //     if(foundUser){
+  //       }
+  //     else{
+  //       res.redirect("/")
+  //     }
+  //   }
+  // });
+})
+
+app.post("/delete", function(req, res){
+
+  console.log(req.user.username);
+  User.updateOne({username: req.user.username}, {secret: req.body.uTask}, function(err){
+    if(err){
+      console.log("12345678");
+    }else{
+      console.log("Sucesffuly Updated the document");
+        }
+    } );
+
+  Item.findByIdAndRemove(req.body.chickbox , function(err){
+  if(err){
+    console.log(err);
+  }else{
+      console.log("Deleted");
+       res.redirect("/secrets")
+}})
+})
 
 
     let port = process.env.PORT;
